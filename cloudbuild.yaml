@@ -10,26 +10,19 @@ steps:
         pip install --upgrade pip build
         python -m build
 
-  # Step 2: Upload the build to Google Artifact Registry
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
+  # Step 2: Build a Docker image containing the package
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - '-c'
-      - |
-        # Configure environment
-        gcloud config set project $PROJECT_ID
-        gcloud auth configure-docker us-central1-docker.pkg.dev
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/python-build-artifact/my-python-package:latest'
+      - '.'
 
-        # Upload the package to Google Artifact Registry
-        gcloud artifacts packages create my-python-package \
-          --repository=python-build-artifact \
-          --location=us-central1
-
-        gcloud artifacts packages versions create 1.0.0 \
-          --package=my-python-package \
-          --repository=python-build-artifact \
-          --location=us-central1 \
-          --source=dist/*
+  # Step 3: Push the image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/python-build-artifact/my-python-package:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
