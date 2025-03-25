@@ -1,32 +1,30 @@
 steps:
-  # Step 1: Install build tools in the same container
+  # Step 1: Build the package
   - name: 'python'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        python -m pip install --upgrade pip
-        pip install build twine
+        pip install --upgrade pip build twine
         python -m build
 
-  # Step 2: Authenticate and configure Artifact Registry
+  # Step 2: Upload to Artifact Registry
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        gcloud auth activate-service-account --key-file=$_SERVICE_ACCOUNT_KEY
+        # Authenticate using Cloud Build's default service account
+        gcloud auth list  # Verify authentication
+        gcloud config set project $PROJECT_ID
+
+        # Configure Python repository
         gcloud artifacts print-settings python \
           --repository=python-build-artifact \
           --location=us-central1 > ~/.pypirc
 
-  # Step 3: Upload package
-  - name: 'python'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        twine upload --repository python-build-artifact dist/*
+        # Install twine in THIS container
+        pip install twine
 
-options:
-  logging: CLOUD_LOGGING_ONLY
+        # Upload package
+        twine upload --repository python-build-artifact dist/*
