@@ -1,39 +1,34 @@
 steps:
-  # Step 1: Build the Python package
+  # Step 1: Build the Python package (unchanged)
   - name: 'python'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        # Avoid system package conflicts
         python -m venv venv
         source venv/bin/activate
-
-        # Install dependencies in virtual environment
         pip install --upgrade pip build twine
         python -m build
 
-  # Step 2: Upload to Artifact Registry
+  # Step 2: Upload to Artifact Registry (fixed)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        # Install twine in a virtual environment
-        python -m venv venv
+        # Use Python 3 explicitly
+        python3 -m venv venv
         source venv/bin/activate
+        pip install --upgrade pip
         pip install twine
 
-        # Authenticate using Cloud Build's default service account
-        gcloud auth list
+        # Authentication & configuration
         gcloud config set project $PROJECT_ID
-
-        # Configure Artifact Registry
         gcloud artifacts print-settings python \
           --repository=python-build-artifact \
           --location=us-central1 > ~/.pypirc
 
-        # Upload using absolute path to twine
+        # Upload package
         venv/bin/twine upload --repository python-build-artifact dist/*
 
 options:
