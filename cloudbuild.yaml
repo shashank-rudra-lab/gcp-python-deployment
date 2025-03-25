@@ -1,52 +1,35 @@
 steps:
-  # Step 1: Upgrade pip
+  # Step 1: Install build tools globally
   - name: 'python'
-    entrypoint: 'python'
-    args: ['-m', 'pip', 'install', '--upgrade', 'pip']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        python -m pip install --upgrade pip
+        pip install build twine
 
-  # Step 2: Install required dependencies
-  - name: 'python'
-    entrypoint: 'python'
-    args: ['-m', 'pip', 'install', 'build', 'pytest', 'Flask', '--user']
-
-  # Step 3: Build the Python package
+  # Step 2: Build the package
   - name: 'python'
     entrypoint: 'python'
     args: ['-m', 'build']
-    dir: 'src' 
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
-    args:
-    - '-c'
-    - 'ls -lah /workspace && pwd'
-  
-#debug
 
-  # Step 4: Authenticate with Artifact Registry
+  # Step 3: Configure Artifact Registry auth
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        gcloud auth application-default login
-        gcloud artifacts repositories add-iam-policy-binding python-build-artifact \
-          --location=us-central1 \
-          --member=allAuthenticatedUsers \
-          --role=roles/artifactregistry.writer
+        gcloud auth activate-service-account --key-file=$_SERVICE_ACCOUNT_KEY
+        gcloud config set artifacts/repository python-build-artifact
+        gcloud config set artifacts/location us-central1
 
-  # Step 5: Upload package to Artifact Registry
+  # Step 4: Upload to Artifact Registry
   - name: 'python'
-    entrypoint: 'python'
-    args: ['-m', 'pip', 'install', '--upgrade', 'twine']
-  
-  - name: 'python'
-    entrypoint: 'python'
+    entrypoint: 'bash'
     args:
-      - '-m'
-      - 'twine'
-      - 'upload'
-      - '--repository-url'
-      - 'https://us-central1-python.pkg.dev/python-app-454407/python-build-artifact/'
-      - 'dist/*'
+      - '-c'
+      - |
+        twine upload --repository-url https://us-central1-python.pkg.dev/$PROJECT_ID/python-build-artifact/ dist/*
+        
 options:
   logging: CLOUD_LOGGING_ONLY
