@@ -40,3 +40,5 @@ steps:
       - '--repository-url'
       - 'https://us-central1-python.pkg.dev/python-app-454407/python-build-artifact/'
       - 'dist/*'
+  - options:
+    logging: CLOUD_LOGGING_ONLY
