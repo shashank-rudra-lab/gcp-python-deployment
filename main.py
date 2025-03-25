@@ -5,7 +5,7 @@ def main():
     
     @app.route('/')
     def home():
-        return "Hello from flat structure!"
+        return "Just Testing"
     
     app.run(host='0.0.0.0', port=8080)
 
