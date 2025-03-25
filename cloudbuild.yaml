@@ -1,5 +1,5 @@
 steps:
-  # Step 1: Install dependencies and build
+  # Step 1: Build Python package
   - name: 'python'
     entrypoint: 'bash'
     args:
@@ -13,14 +13,16 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/python-build-artifact/myapp:$BUILD_ID'
+      - 'us-central1-docker.pkg.dev/python-app-454407/python-docker/myapp:$BUILD_ID'
       - '.'
 
   # Step 3: Push Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/python-build-artifact/myapp:$BUILD_ID'
+      - 'us-central1-docker.pkg.dev/python-app-454407/python-docker/myapp:$BUILD_ID'
+
+
 
 options:
   logging: CLOUD_LOGGING_ONLY
