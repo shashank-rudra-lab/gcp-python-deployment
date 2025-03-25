@@ -7,28 +7,25 @@ steps:
       - |
         python -m venv venv
         source venv/bin/activate
-        pip install --upgrade pip build twine
+        pip install --upgrade pip build
         python -m build
 
-  # Step 2: Simplified upload using system Python 3
+  # Step 2: Upload the build to Google Artifact Registry
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        # Ensure Python 3 and pip are available
-        apt-get update && apt-get install -y python3-pip
-
-        # Install twine directly in the container
-        pip3 install --upgrade twine
-
         # Configure environment
         gcloud config set project $PROJECT_ID
-        gcloud artifacts print-settings python \
-          --repository=python-build-artifact \
-          --location=us-central1 > ~/.pypirc
+        gcloud auth configure-docker us-central1-docker.pkg.dev
 
-        # Upload using Python 3 module syntax
-        python3 -m twine upload --repository python-build-artifact dist/*
+        # Upload the package to Google Artifact Registry
+        gcloud artifacts packages upload python-build-artifact \
+          --location=us-central1 \
+          --repository=python-build-artifact \
+          --package=my-python-package \
+          --source=dist/*
+
 options:
   logging: CLOUD_LOGGING_ONLY
