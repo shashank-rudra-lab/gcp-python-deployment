@@ -1,10 +1,15 @@
 steps:
-  # Step 1: Build the package
+  # Step 1: Build the Python package
   - name: 'python'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
+        # Avoid system package conflicts
+        python -m venv venv
+        source venv/bin/activate
+
+        # Install dependencies in virtual environment
         pip install --upgrade pip build twine
         python -m build
 
@@ -14,20 +19,22 @@ steps:
     args:
       - '-c'
       - |
+        # Install twine in a virtual environment
+        python -m venv venv
+        source venv/bin/activate
+        pip install twine
+
         # Authenticate using Cloud Build's default service account
-        gcloud auth list  # Verify authentication
+        gcloud auth list
         gcloud config set project $PROJECT_ID
 
-        # Configure Python repository
+        # Configure Artifact Registry
         gcloud artifacts print-settings python \
           --repository=python-build-artifact \
           --location=us-central1 > ~/.pypirc
 
-        # Install twine in THIS container
-        pip install twine
+        # Upload using absolute path to twine
+        venv/bin/twine upload --repository python-build-artifact dist/*
 
-        # Upload package
-        twine upload --repository python-build-artifact dist/*
-  
 options:
   logging: CLOUD_LOGGING_ONLY
