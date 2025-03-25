@@ -28,3 +28,6 @@ steps:
 
         # Upload package
         twine upload --repository python-build-artifact dist/*
+  
+options:
+  logging: CLOUD_LOGGING_ONLY
