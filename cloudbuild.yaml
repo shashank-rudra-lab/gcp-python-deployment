@@ -1,0 +1,42 @@
+steps:
+  # Step 1: Upgrade pip
+  - name: 'python'
+    entrypoint: 'python'
+    args: ['-m', 'pip', 'install', '--upgrade', 'pip']
+
+  # Step 2: Install required dependencies
+  - name: 'python'
+    entrypoint: 'python'
+    args: ['-m', 'pip', 'install', 'build', 'pytest', 'Flask', '--user']
+
+  # Step 3: Build the Python package
+  - name: 'python'
+    entrypoint: 'python'
+    args: ['-m', 'build']
+
+  # Step 4: Authenticate with Artifact Registry
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud auth application-default login
+        gcloud artifacts repositories add-iam-policy-binding python-build-artifact \
+          --location=us-central1 \
+          --member=allAuthenticatedUsers \
+          --role=roles/artifactregistry.writer
+
+  # Step 5: Upload package to Artifact Registry
+  - name: 'python'
+    entrypoint: 'python'
+    args: ['-m', 'pip', 'install', '--upgrade', 'twine']
+  
+  - name: 'python'
+    entrypoint: 'python'
+    args:
+      - '-m'
+      - 'twine'
+      - 'upload'
+      - '--repository-url'
+      - 'https://us-central1-python.pkg.dev/python-app-454407/python-build-artifact/'
+      - 'dist/*'
