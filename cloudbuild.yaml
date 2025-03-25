@@ -13,6 +13,7 @@ steps:
   - name: 'python'
     entrypoint: 'python'
     args: ['-m', 'build']
+    dir: 'src' 
 
   # Step 4: Authenticate with Artifact Registry
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
