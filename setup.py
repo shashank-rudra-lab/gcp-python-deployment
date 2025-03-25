@@ -1,10 +1,8 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="my-python-app",
     version="0.1",
-    packages=find_packages(),
-    install_requires=[
-        "Flask"
-    ],
+    packages=["."],  # Include current directory
+    install_requires=["Flask"],
 )
