@@ -22,7 +22,17 @@ steps:
       - 'push'
       - 'us-central1-docker.pkg.dev/python-app-454407/python-docker/myapp:$BUILD_ID'
 
-
+  # Step 4: Deploy to App Engine
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud config set project python-app-454407
+        gcloud app deploy app.yaml \
+          --quiet \
+          --promote \
+          --service-account=python-cloud-service-account@python-app-454407.iam.gserviceaccount.com
 
 options:
   logging: CLOUD_LOGGING_ONLY
