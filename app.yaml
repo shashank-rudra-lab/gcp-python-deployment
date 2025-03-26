@@ -1,1 +1,2 @@
- runtime: custom
+runtime: custom
+env: flex
